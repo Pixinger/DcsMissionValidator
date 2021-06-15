@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -39,6 +38,7 @@ namespace DcsMissionValidator
                 {
                     using (StreamWriter file = new StreamWriter(_Filename, true, Encoding.UTF8))
                     {
+                        file.Write(DateTime.Now.ToString("dd.MM.yy HH:mm:ss: "));
                         file.WriteLine(text);
                     }
                 }
@@ -50,6 +50,7 @@ namespace DcsMissionValidator
         }
         private static void WriteConsoleTarget(string text)
         {
+            text = DateTime.Now.ToString("dd.MM.yy HH:mm:ss: ") + text;
             Console.WriteLine(text);
             System.Diagnostics.Debug.WriteLine(text);
         }

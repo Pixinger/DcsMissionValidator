@@ -47,10 +47,13 @@
   <ItemGroup>
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="ConsoleTermination.cs" />
+    <Compile Include="DirectoryWatcher.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MissionValidator.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ValidationPool.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

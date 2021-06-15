@@ -15,6 +15,7 @@ namespace DcsMissionValidator
         public string LogFilename = "DcsMissionValidator.log";
         public string[] InvalidFolders;
         public string[] ValidMods;
+        public double DelayAfterModified_s = 2.0;
 
         [XmlIgnore]
         private string Filename = "DcsMissionValidator.xml";

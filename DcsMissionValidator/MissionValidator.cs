@@ -4,13 +4,15 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace DcsMissionValidator
 {
     internal class MissionValidator
     {
-        public class Mission
+        #region private class Mission
+        private class Mission
         {
             private List<string> _Mods = new List<string>();
             private List<string> _InvalidMods = new List<string>();
@@ -28,7 +30,7 @@ namespace DcsMissionValidator
                         if (stop != -1)
                         {
                             string sub = content.Substring(start, stop - start);
-                            var split = sub.Split(new char[] { '\n'}, StringSplitOptions.RemoveEmptyEntries);
+                            var split = sub.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
                             if (split != null &&
                                 split.Length > 2 &&
                                 split[0].Contains("[\"requiredModules\"] = ") &&
@@ -64,6 +66,35 @@ namespace DcsMissionValidator
             public List<string> Mods => this._Mods;
             public List<string> InvalidMods => this._InvalidMods;
         }
+        #endregion
+
+        #region private class TextfileLogger
+        private class TextfileLogger
+        {
+            private string _Filename;
+
+            public TextfileLogger(string filename)
+            {
+                this._Filename = filename;
+            }
+
+            public void Write(string text)
+            {
+                // This method should be bullet proof!
+                try
+                {
+                    using (StreamWriter file = new StreamWriter(this._Filename, true, Encoding.UTF8))
+                    {
+                        file.WriteLine(text);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex, "Exception while writing to TextfileLogger.");
+                }
+            }
+        }
+        #endregion
 
 
         private MissionValidator()
@@ -85,16 +116,23 @@ namespace DcsMissionValidator
 
             return false;
         }
-        private static bool Analyze(Configuration configuration, FileInfo fileInfo)
+        private static bool Analyze(Configuration configuration, FileInfo fileInfo, bool createTextfile)
         {
             Debug.Assert(fileInfo != null);
             Debug.Assert(fileInfo.Exists);
+
+            // Create a textfile-logger if we need one.
+            TextfileLogger textfileLogger = null;
+            if (createTextfile)
+            {
+                textfileLogger = new TextfileLogger(fileInfo.FullName + ".txt");
+            }
 
             try
             {
                 bool result = true;
 
-                Logger.Debug($"Open MIZ-File");
+                Logger.Debug($"Open miz-File: {fileInfo.FullName}");
                 using (ZipArchive zip = ZipFile.Open(fileInfo.FullName, ZipArchiveMode.Read))
                 {
                     // Folder: "track"
@@ -103,6 +141,7 @@ namespace DcsMissionValidator
                     {
                         result = false;
                         Logger.Error($"File '{fileInfo.FullName}' contained 'track' or 'track_data' folder.");
+                        textfileLogger?.Write("The mission contained invalid folders. Maybe it was copied from a trk-file?");
                     }
 
                     // Mission file
@@ -121,6 +160,7 @@ namespace DcsMissionValidator
                                 foreach (var mod in invalidMods)
                                 {
                                     Logger.Error($" - {mod}");
+                                    textfileLogger?.Write($"The mission contained an invalid mod: '{mod}'");
                                 }
                             }
                             else
@@ -133,19 +173,20 @@ namespace DcsMissionValidator
                     {
                         result = false;
                         Logger.Error($"File '{fileInfo.FullName}' contains no 'mission' file.");
+                        textfileLogger?.Write($"The mission contained no 'mission' file.");
                     }
-
                 }
 
                 return result;
             }
             catch (Exception ex) // Be ready for the unexpected...
             {
-                Logger.Error(ex);
+                Logger.Error(ex, $"Exception while analyzing file: {fileInfo.FullName}");
+                textfileLogger?.Write($"Exception while analyzing file. EXCEPTION: {ex.Message}");
                 return false;
             }
         }
-        public static bool Validate(Configuration configuration, FileInfo fileInfo, bool simulate)
+        public static bool Validate(Configuration configuration, FileInfo fileInfo, bool simulate, bool createTextfile)
         {
             if (configuration == null)
             {
@@ -168,7 +209,7 @@ namespace DcsMissionValidator
             {
                 // Analyze the miz-file.
                 Logger.Debug($"Analyze: {fileInfo.FullName}");
-                if (Analyze(configuration, fileInfo))
+                if (Analyze(configuration, fileInfo, createTextfile))
                 {
                     return true;
                 }

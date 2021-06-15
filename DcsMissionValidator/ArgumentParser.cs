@@ -9,10 +9,12 @@ namespace DcsMissionValidator
     {
         private readonly bool _IsValid = false;
         private readonly bool _IsSimulate = false;
+        private readonly bool _IsTextfile = false;
         private readonly bool _IsHelpRequested = false;
         private readonly List<string> _Filenames = new List<string>();
         private readonly List<string> _Directories = new List<string>();
         private readonly List<string> _Recursives = new List<string>();
+        private readonly string _MonitorFolder = null;
         private readonly string _ConfigurationFilename = "DcsMissionValidator.xml";
 
         public ArgumentParser(string[] args)
@@ -21,33 +23,44 @@ namespace DcsMissionValidator
             {
                 foreach (var argument in args)
                 {
-                    if (argument.StartsWith("-f:", StringComparison.InvariantCultureIgnoreCase) ||
-                        argument.StartsWith("/f:", StringComparison.InvariantCultureIgnoreCase))
+                    if (argument.StartsWith("-file:", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/file:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         this._IsValid = true;
-                        this._Filenames.Add(argument.Substring(3, argument.Length - 3));
+                        this._Filenames.Add(argument.Substring(6, argument.Length - 6));
                     }
-                    else if (argument.StartsWith("-d:", StringComparison.InvariantCultureIgnoreCase) ||
-                        argument.StartsWith("/d:", StringComparison.InvariantCultureIgnoreCase))
+                    else if (argument.StartsWith("-dir:", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/dir:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         this._IsValid = true;
-                        this._Directories.Add(argument.Substring(3, argument.Length - 3));
+                        this._Directories.Add(argument.Substring(5, argument.Length - 5));
                     }
-                    else if (argument.StartsWith("-r:", StringComparison.InvariantCultureIgnoreCase) ||
-                        argument.StartsWith("/r:", StringComparison.InvariantCultureIgnoreCase))
+                    else if (argument.StartsWith("-rec:", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/rec:", StringComparison.InvariantCultureIgnoreCase))
                     {
                         this._IsValid = true;
-                        this._Recursives.Add(argument.Substring(3, argument.Length - 3));
+                        this._Recursives.Add(argument.Substring(5, argument.Length - 5));
+                    }
+                    else if (argument.StartsWith("-mon:", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/mon:", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        this._IsValid = true;
+                        this._MonitorFolder = argument.Substring(5, argument.Length - 5);
                     }
                     else if (argument.StartsWith("-?", StringComparison.InvariantCultureIgnoreCase) ||
                         argument.StartsWith("/?", StringComparison.InvariantCultureIgnoreCase))
                     {
                         this._IsHelpRequested = true;
                     }
-                    else if (argument.StartsWith("-s", StringComparison.InvariantCultureIgnoreCase) ||
-                        argument.StartsWith("/s", StringComparison.InvariantCultureIgnoreCase))
+                    else if (argument.StartsWith("-sim", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/sim", StringComparison.InvariantCultureIgnoreCase))
                     {
                         this._IsSimulate = true;
+                    }
+                    else if (argument.StartsWith("-txt", StringComparison.InvariantCultureIgnoreCase) ||
+                        argument.StartsWith("/txt", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        this._IsTextfile = true;
                     }
                     else if (argument.StartsWith("-cfg:", StringComparison.InvariantCultureIgnoreCase) ||
                         argument.StartsWith("/cfg:", StringComparison.InvariantCultureIgnoreCase))
@@ -60,6 +73,7 @@ namespace DcsMissionValidator
 
         public bool IsValid => this._IsValid;
         public bool IsSimulate => this._IsSimulate;
+        public bool IsTextfile => this._IsTextfile;
         public bool IsHelpRequested => this._IsHelpRequested;
 
         public string[] Filenames
@@ -84,6 +98,7 @@ namespace DcsMissionValidator
             }
         }
         public string ConfigurationFilename => this._ConfigurationFilename;
+        public string MonitorFolder => this._MonitorFolder;
 
         private void AddFileInfosFromFilenames(List<FileInfo> fileInfoResults)
         {
@@ -135,28 +150,32 @@ namespace DcsMissionValidator
         public FileInfo[] GetFileInfos()
         {
             var list = new List<FileInfo>();
-            AddFileInfosFromFilenames(list);
-            AddFileInfosFromDirectories(list);
-            AddFileInfosFromRecursives(list);
+            this.AddFileInfosFromFilenames(list);
+            this.AddFileInfosFromDirectories(list);
+            this.AddFileInfosFromRecursives(list);
             return list.Distinct().ToArray();
         }
 
         public void PrintHelp()
         {
             Console.WriteLine("Command line information 'DcsMissionValidator.exe':");
-            Console.WriteLine(" -f:{filename}         Validates the specified file.");
-            Console.WriteLine(" -d:{directory}        Validates all *.miz file of the specified directory.");
-            Console.WriteLine(" -s                    Simulate validation. The file will not be deleted.");
-            Console.WriteLine(" -?                    This text.");
+            Console.WriteLine(" -?                      This text.");
+            Console.WriteLine(" -file:{filename}        Validates the specified file.");
+            Console.WriteLine(" -dir:{directory}        Validates all *.miz file of the specified directory.");
+            Console.WriteLine(" -rec:{directory}        Recursivly validates all *.miz file of the specified directory and sub-directories.");
+            Console.WriteLine(" -mon:{directory}        Permanently monitors a directory (incl sub-directories) and validates all *.miz files, when added or changed.");
+            Console.WriteLine(" -sim                    SIMULATE validation. The file will not be deleted.");
+            Console.WriteLine(" -txt                    Create a textfile for each FAILED validation.");
             Console.WriteLine("");
             Console.WriteLine("Samples:");
-            Console.WriteLine("1. DcsMissionValidator.exe -f:test.miz -s");
-            Console.WriteLine("2. DcsMissionValidator.exe -f:d:\\test.miz");
-            Console.WriteLine("3. DcsMissionValidator.exe -f:\"d:\\some folder\\test.miz\"");
-            Console.WriteLine("4. DcsMissionValidator.exe -d:d:\\test");
-            Console.WriteLine("5. DcsMissionValidator.exe -d:\"d:\\some folder\"");
-            Console.WriteLine("6. DcsMissionValidator.exe -f:test.miz -d:D:\\AnotherOne -s");
-            Console.WriteLine("7. DcsMissionValidator.exe -f:test.miz -f:d:\\test2.miz -d:\"D:\\Another One\" -s");
+            Console.WriteLine("1. DcsMissionValidator.exe -file:test.miz -s");
+            Console.WriteLine("2. DcsMissionValidator.exe -file:d:\\test.miz");
+            Console.WriteLine("3. DcsMissionValidator.exe -file:\"d:\\some folder\\test.miz\"");
+            Console.WriteLine("4. DcsMissionValidator.exe -dir:d:\\test");
+            Console.WriteLine("4. DcsMissionValidator.exe -mon:d:\\test -txt");
+            Console.WriteLine("5. DcsMissionValidator.exe -dir:\"d:\\some folder\"");
+            Console.WriteLine("6. DcsMissionValidator.exe -file:test.miz -dir:D:\\AnotherOne -sim");
+            Console.WriteLine("7. DcsMissionValidator.exe -file:test.miz -file:d:\\test2.miz -dir:\"D:\\Another One\" -s");
             Console.WriteLine("");
             Console.WriteLine("Have fun...");
         }
