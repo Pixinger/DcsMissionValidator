@@ -41,7 +41,10 @@ namespace DcsMissionValidator
                 "Edge540 FM by Aero",
                 "Military Aircraft Mod",
                 "CivilAircraftMod",
-                "A-4E-C"
+                "A-4E-C",
+                "TF-51D Mustang by Eagle Dynamics",
+                "VARS Pylons 2019 by GrinnelliDesigns",
+                "WWII Armour and Technics",
             };
 
             return instance;
