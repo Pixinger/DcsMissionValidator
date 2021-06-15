@@ -6,6 +6,11 @@ namespace DcsMissionValidator
 {
     public class Configuration
     {
+        public const int CFG_VERSION = 2;
+
+        [XmlAttribute]
+        public int CfgVersion = 1;
+
 #if (DEBUG)
         public bool Debug = true;
 #else
@@ -53,6 +58,11 @@ namespace DcsMissionValidator
                         var instance = serializer.Deserialize(reader) as Configuration;
                         reader.Close();
                         instance.Filename = filename;
+                        // Update structure if required.
+                        if (instance.CfgVersion < CFG_VERSION)
+                        {
+                            instance.Save();
+                        }
                         return instance;
                     }
                 }
@@ -91,6 +101,7 @@ namespace DcsMissionValidator
                 XmlSerializer serializer = new XmlSerializer(typeof(Configuration));
                 using (StreamWriter streamWriter = new StreamWriter(this.Filename, false, System.Text.Encoding.UTF8))
                 {
+                    this.CfgVersion = CFG_VERSION;
                     serializer.Serialize(streamWriter, this, null);
                     streamWriter.Close();
                 }

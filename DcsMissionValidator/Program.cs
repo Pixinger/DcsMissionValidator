@@ -16,12 +16,6 @@ namespace DcsMissionValidator
                     return;
                 }
 
-                if (!argumentParser.IsValid)
-                {
-                    Console.WriteLine("ERROR: Invalid arguments. Use command line '-?' for more information.");
-                    return;
-                }
-
                 var configuration = Configuration.LoadFromFile(argumentParser.ConfigurationFilename);
                 if (configuration != null)
                 {
@@ -30,6 +24,12 @@ namespace DcsMissionValidator
                     Logger.SetFilename(configuration.LogFilename);
                     Logger.Debug("Debug enabled");
                     Logger.Debug($"Configfile: {configuration.LogFilename}");
+
+                    if (!argumentParser.IsValid)
+                    {
+                        Console.WriteLine("ERROR: Invalid arguments. Use command line '-?' for more information.");
+                        return;
+                    }
 
                     // -------------------------
                     // Run on demand
