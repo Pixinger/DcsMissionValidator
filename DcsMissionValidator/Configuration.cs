@@ -6,7 +6,7 @@ namespace DcsMissionValidator
 {
     public class Configuration
     {
-        public const int CFG_VERSION = 2;
+        public const int CFG_VERSION = 3;
 
         [XmlAttribute]
         public int CfgVersion = 1;
@@ -21,6 +21,7 @@ namespace DcsMissionValidator
         public string[] InvalidFolders;
         public string[] ValidMods;
         public double DelayAfterModified_s = 2.0;
+        public int MaxFileSize_b = 26214400; // 26,214,400 Bytes := 25MB
 
         [XmlIgnore]
         private string Filename = "DcsMissionValidator.xml";

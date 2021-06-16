@@ -46,6 +46,14 @@ namespace DcsMissionValidator
                     {
                         this._IsValid = true;
                         this._MonitorFolder = argument.Substring(5, argument.Length - 5);
+                        if (this._MonitorFolder.EndsWith("\""))
+                        {
+                            this._MonitorFolder = this._MonitorFolder.Remove(this._MonitorFolder.Length - 1, 1);
+                        }
+                        if (this._MonitorFolder.EndsWith("\\"))
+                        {
+                            this._MonitorFolder = this._MonitorFolder.Remove(this._MonitorFolder.Length - 1, 1);
+                        }
                     }
                     else if (argument.StartsWith("-?", StringComparison.InvariantCultureIgnoreCase) ||
                         argument.StartsWith("/?", StringComparison.InvariantCultureIgnoreCase))

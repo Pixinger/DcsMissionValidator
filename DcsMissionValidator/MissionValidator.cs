@@ -132,6 +132,13 @@ namespace DcsMissionValidator
             {
                 bool result = true;
 
+                if (fileInfo.Length > configuration.MaxFileSize_b)
+                {
+                    Logger.Error($"File '{fileInfo.FullName}' exceeded max filesize of {configuration.MaxFileSize_b} bytes.");
+                    textfileLogger?.Write($"Exceeded with {fileInfo.Length} Bytes, the max allowed filesize of {configuration.MaxFileSize_b} Bytes.");
+                    return false;
+                }
+
                 Logger.Debug($"Open miz-File: {fileInfo.FullName}");
                 using (ZipArchive zip = ZipFile.Open(fileInfo.FullName, ZipArchiveMode.Read))
                 {
