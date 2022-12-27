@@ -39,6 +39,7 @@ namespace DcsMissionValidator
                 this._Watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
                 this._Watcher.Created += this.OnFileChanged;
                 this._Watcher.Changed += this.OnFileChanged;
+                this._Watcher.Renamed += this.OnFileRenamed;
                 this._Watcher.IncludeSubdirectories = true;
                 this._Watcher.EnableRaisingEvents = true;
             }
@@ -80,6 +81,7 @@ namespace DcsMissionValidator
             Logger.Debug("DirectoryWatcher disposed");
         }
 
+        private void OnFileRenamed(object source, FileSystemEventArgs e) => OnFileChanged(source, e);
         private void OnFileChanged(object source, FileSystemEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.FullPath))
